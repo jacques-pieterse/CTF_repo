@@ -4,7 +4,7 @@ const express = require('express');
 const path = require('path');
 
 // Configuration
-const JETSON_PORT = process.env.PORT || 443;       // Port used by the Jetson Nano
+const JETSON_PORT = 12345;       // Port used by the Jetson Nano
 const WEBSOCKET_PORT =process.env.PORT || 443;
 const WEBAPP_PORT = process.env.PORT || 443;
 
