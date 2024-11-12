@@ -24,7 +24,7 @@ function main() {
   let offsetX = 0;
   let offsetY = 0;
 
-  const ws = new WebSocket('ws://${window.location.host}');
+  const ws = new WebSocket('wss://capture-the-flag-vlhp.onrender.com');
 
   const carColors = {
     red: 'red',
