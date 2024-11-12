@@ -1,3 +1,4 @@
+// script.js
 // Wait for OpenCV.js to be ready
 let Module = {
   onRuntimeInitialized: function() {
@@ -24,7 +25,8 @@ function main() {
   let offsetX = 0;
   let offsetY = 0;
 
-  const ws = new WebSocket('wss://capture-the-flag-vlhp.onrender.com');
+  // **UPDATED**: Connect to the new WebSocket endpoint for web clients
+  const ws = new WebSocket(`wss://${window.location.host}/ws`);
 
   const carColors = {
     red: 'red',
