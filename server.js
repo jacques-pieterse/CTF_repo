@@ -5,7 +5,7 @@ const path = require('path');
 
 // Configuration
 const JETSON_PORT = process.env.JETSON_PORT || 12345;
-const WEBSOCKET_PORT = process.env.WEBSOCKET_PORT || 8080;
+const WEBSOCKET_PORT = process.env.WEBSOCKET_PORT || 443;
 const WEBAPP_PORT = process.env.PORT || 3000;
 
 // Create a TCP server to accept connection from Jetson Nano
