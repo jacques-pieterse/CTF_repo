@@ -1,64 +1,72 @@
-const net = require('net');
 const WebSocket = require('ws');
 const express = require('express');
 const path = require('path');
+const https = require('https');
+const fs = require('fs');
 
 // Configuration
-const JETSON_PORT = 12345;       // Port used by the Jetson Nano
-const WEBSOCKET_PORT =process.env.PORT || 443;
-const WEBAPP_PORT = process.env.PORT || 443;
+const SERVER_PORT = process.env.PORT || 443; // Use environment variable or default to 443
 
-// Create a TCP server to accept connection from Jetson Nano
-const tcpServer = net.createServer((client) => {
-  console.log('Jetson Nano connected');
+// SSL/TLS Certificates (Render handles SSL, so these can be omitted if Render manages SSL)
+const options = {
+  // Uncomment and configure if managing SSL manually
+  // key: fs.readFileSync('/path/to/your/private.key'),
+  // cert: fs.readFileSync('/path/to/your/certificate.crt'),
+};
 
-  // Buffer to accumulate data chunks
-  let buffer = '';
+// Create an Express application
+const app = express();
 
-  client.on('data', (data) => {
-    buffer += data.toString();
-    let index;
-    while ((index = buffer.indexOf('\n')) >= 0) {
-      const message = buffer.slice(0, index);
-      buffer = buffer.slice(index + 1);
-      try {
-        const parsedMessage = JSON.parse(message);
+// Serve the web application using Express
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
 
-        // Broadcast the message to all connected WebSocket clients
-        wss.clients.forEach((ws) => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify(parsedMessage));
+// Create an HTTPS server (Render handles SSL/TLS)
+const server = https.createServer(options, app);
+
+// Initialize WebSocket Server on the same HTTPS server
+const wss = new WebSocket.Server({ server });
+
+// Handle WebSocket connections
+wss.on('connection', (ws, req) => {
+  const ip = req.socket.remoteAddress;
+  console.log(`Client connected: ${ip}`);
+
+  ws.on('message', (message) => {
+    try {
+      const parsedMessage = JSON.parse(message);
+
+      // If message is from Jetson, broadcast to web clients
+      if (parsedMessage.from === 'jetson') {
+        // Broadcast to all connected WebSocket clients except the sender
+        wss.clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(parsedMessage));
           }
         });
-      } catch (err) {
-        console.error('Error parsing JSON data:', err);
       }
+
+      // If message is from web app, handle accordingly
+      if (parsedMessage.from === 'webapp') {
+        // Handle messages from web application if needed
+        // Example: Send commands to Jetson Nano via WebSockets
+        // You can implement logic here based on your application's needs
+      }
+
+    } catch (err) {
+      console.error('Error parsing JSON message:', err);
     }
   });
 
-  client.on('end', () => {
-    console.log('Jetson Nano disconnected');
+  ws.on('close', () => {
+    console.log(`Client disconnected: ${ip}`);
   });
 
-  client.on('error', (err) => {
-    console.error('TCP client error:', err);
+  ws.on('error', (err) => {
+    console.error(`WebSocket error from ${ip}:`, err);
   });
 });
 
-tcpServer.listen(JETSON_PORT, () => {
-  console.log(`TCP server listening on port ${JETSON_PORT}`);
-});
-
-// WebSocket Server to communicate with the web application
-const wss = new WebSocket.Server({ port: WEBSOCKET_PORT });
-
-wss.on('connection', (ws) => {
-  console.log('Web application connected via WebSocket');
-});
-
-// Serve the web application using Express
-const app = express();
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from 'public' directory
-app.listen(WEBAPP_PORT, () => {
-  console.log(`Web application server running on port ${WEBAPP_PORT}`);
+// Start the HTTPS and WebSocket server
+server.listen(SERVER_PORT, () => {
+  console.log(`Server is listening on port ${SERVER_PORT}`);
 });
