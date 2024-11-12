@@ -24,7 +24,7 @@ function main() {
   let offsetX = 0;
   let offsetY = 0;
 
-  const ws = new WebSocket('ws://' + window.location.hostname + ':8080');
+  const ws = new WebSocket('ws://' + window.location.hostname + ':443');
 
   const carColors = {
     red: 'red',
