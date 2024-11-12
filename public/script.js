@@ -13,8 +13,8 @@ function main() {
   // Original maze dimensions
   const originalWidth = 1280;
   const originalHeight = 720;
-  const scaleX = canvas.width / originalWidth; // Original width
-  const scaleY = canvas.height / originalHeight;  // Original height
+  const scaleX = canvas.width / originalWidth; // Scale factor for width
+  const scaleY = canvas.height / originalHeight; // Scale factor for height
 
   // Apply scaling to the canvas context
   ctx.scale(scaleX, scaleY);
@@ -24,11 +24,11 @@ function main() {
   let offsetX = 0;
   let offsetY = 0;
 
-  // **UPDATED**: Establish WebSocket connection to the Render-hosted server
-  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `capture-the-flag-vlhp.onrender.com`;
-  const ws = new WebSocket(wsUrl);
+  // **UPDATED**: Initialize WebSocket connection to the same host and port as the web app
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${wsProtocol}://${window.location.host}`);
 
+  // Define colors for cars
   const carColors = {
     red: 'red',
     yellow: 'yellow',
@@ -36,7 +36,7 @@ function main() {
     blue: 'blue'
   };
 
-  let cars = {}; // Current positions
+  let cars = {}; // Current positions of cars
   let targetPositions = {}; // Target positions for animation
   let paths = {};
   let animationStartTime = null;
@@ -46,12 +46,12 @@ function main() {
 
   const errorOverlay = document.getElementById('errorOverlay');
 
+  // Handle WebSocket connection open event
   ws.onopen = () => {
     console.log('Connected to WebSocket server');
-    // **ADDED**: Send initialization message to identify as a web client
-    ws.send(JSON.stringify({ type: 'init', clientType: 'web' }));
   };
 
+  // Handle incoming WebSocket messages
   ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log('Data received:', data); // Log received data
@@ -102,13 +102,14 @@ function main() {
             cars[color] = { ...transformedPosition };
           }
 
-          // Set target position
+          // Set target position for animation
           targetPositions[color] = { ...transformedPosition };
 
           // Start animation
           animationStartTime = performance.now();
         }
       }
+
       if (data.paths) {
         for (const color in data.paths) {
           // **UPDATED**: Transform each point in the path
@@ -120,16 +121,6 @@ function main() {
       // Start the animation loop
       requestAnimationFrame(animate);
     }
-  };
-
-  ws.onclose = () => {
-    console.log('Disconnected from WebSocket server');
-    displayError('Disconnected from server.');
-  };
-
-  ws.onerror = (err) => {
-    console.error('WebSocket error:', err);
-    displayError('WebSocket encountered an error.');
   };
 
   /**
@@ -460,9 +451,10 @@ function main() {
         // 7. Get the corner points
         let cornerPoints = [];
         for (let i = 0; i < 4; i++) {
+          const point = approx.intPtr(i, 0);
           cornerPoints.push({
-            x: approx.intPtr(i, 0)[0],
-            y: approx.intPtr(i, 0)[1],
+            x: point[0],
+            y: point[1],
           });
         }
         console.log('Corner points:', cornerPoints);
