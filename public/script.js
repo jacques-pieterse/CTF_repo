@@ -26,7 +26,7 @@ function main() {
 
   // **UPDATED**: Establish WebSocket connection to the Render-hosted server
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `wss://capture-the-flag-vlhp.onrender.com`;
+  const wsUrl = `capture-the-flag-vlhp.onrender.com`;
   const ws = new WebSocket(wsUrl);
 
   const carColors = {
