@@ -24,8 +24,7 @@ function main() {
   let offsetX = 0;
   let offsetY = 0;
 
-  // **UPDATED**: Use 'wss://' protocol without specifying port
-  const ws = new WebSocket('wss://' + window.location.hostname + '/');
+  const ws = new WebSocket('wss://${window.location.host}');
 
   const carColors = {
     red: 'red',
@@ -46,8 +45,6 @@ function main() {
 
   ws.onopen = () => {
     console.log('Connected to WebSocket server');
-    // **ADDED**: Identify the client as a web application
-    ws.send(JSON.stringify({ from: 'webapp', message: 'Hello Server!' }));
   };
 
   ws.onmessage = (event) => {
@@ -118,16 +115,6 @@ function main() {
       // Start the animation loop
       requestAnimationFrame(animate);
     }
-  };
-
-  ws.onerror = (error) => {
-    console.error('WebSocket Error:', error);
-    displayError('WebSocket encountered an error.');
-  };
-
-  ws.onclose = (event) => {
-    console.log('WebSocket connection closed:', event);
-    displayError('WebSocket connection closed.');
   };
 
   /**
