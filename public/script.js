@@ -26,7 +26,7 @@ function main() {
 
   // **UPDATED**: Initialize WebSocket connection to the same host and port as the web app
   const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const ws = new WebSocket(`${wsProtocol}://${window.location.host}`);
+  const ws = new WebSocket(`wss://capture-the-flag-vlhp.onrender.com`);
 
   // Define colors for cars
   const carColors = {
